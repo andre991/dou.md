@@ -65,7 +65,8 @@ def listar_mes(ano, mes):
     url = url_listagem(ano, mes)
     status, _, corpo = _get(url)
     if status != 200:
-        return []
+        # Um 404 aqui é a página da Base de Dados fora do ar ou com outro endereço, e não "mês vazio".
+        raise RuntimeError(f"listagem indisponível (HTTP {status}): {url}")
     itens = extrair_zips(corpo.decode("utf-8", "replace"), url)
     for it in itens:
         try:
