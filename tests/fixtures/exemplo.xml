@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml><article id="12345678" name="PORTARIA 123" idOficio="999" pubName="DO1" artType="Portaria" pubDate="27/11/2026" artClass="00034:00012:00000" artCategory="Ministério da Fazenda/Gabinete do Ministro" artSize="12" artNotes="" numberPage="45" pdfPage="http://pesquisa.in.gov.br/imprensa/jsp/visualiza/index.jsp?data=27/11/2026&amp;jornal=515&amp;pagina=45" editionNumber="226" highlightType="" highlightPriority="" highlight="" highlightimage="" highlightimagename="" idMateria="98765432">
+<body><Identifica><![CDATA[PORTARIA MF Nº 123, DE 26 DE NOVEMBRO DE 2026]]></Identifica><Data><![CDATA[]]></Data>
+<Ementa><![CDATA[Dispõe sobre exemplo de conversão.]]></Ementa><Titulo /><SubTitulo />
+<Texto><![CDATA[<p class="identifica">PORTARIA MF Nº 123, DE 26 DE NOVEMBRO DE 2026</p><p class="ementa">Dispõe sobre exemplo de conversão.</p><p>O <b>MINISTRO DE ESTADO DA FAZENDA</b>, no uso de suas atribuições, resolve:</p><p>Art. 1º Fica aprovado o anexo.</p><table><tr><td>Item</td><td>Valor</td></tr><tr><td>A</td><td>R$ 10,00</td></tr></table><p class="assina">FULANO DE TAL</p>]]></Texto>
+</body><Midias /></article></xml>

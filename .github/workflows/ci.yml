@@ -1,0 +1,56 @@
+name: Testes
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest
+      - run: python -m pytest -q
+
+  # Teste com dados reais: mapeia e converte um mês da fonte, sem publicar nada.
+  sonda:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Página da Base de Dados (variações de endereço)
+        run: |
+          B="https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados"
+          for Q in "" "?ano=2026&mes=Agosto" "?ano=2026&mes=08" "?ano=2026&mes=8" "?ano=2026"; do
+            echo "== $B$Q"
+            curl -sSL -A "dou.md/0.1" -w "HTTP %{http_code}, %{size_download} bytes\n" "$B$Q" -o pagina.html || true
+            grep -oiE '.{0,160}\.zip.{0,60}' pagina.html | head -5 || true
+            grep -oiE '<select[^>]*>|<option[^>]*>[^<]{0,20}' pagina.html | head -15 || true
+          done
+          curl -sSL -A "dou.md/0.1" "$B" -o pagina.html || true
+      - name: Lista de edições do portal de pesquisa (amostra)
+        if: always()
+        run: |
+          curl -sSL -A "dou.md/0.1" -o edicoes.html -w "HTTP %{http_code}, %{size_download} bytes\n" "https://pesquisa.in.gov.br/imprensa/core/jornalList.action?edicao.dtInicio=27%2F11&edicao.ano=2026&edicao.dtFim=27%2F11&d-7825134-p=1" || true
+          sed -e 's/<[^>]*>/ /g' edicoes.html | tr -s ' \n' | head -c 1500; echo
+          grep -oiE 'href="[^"]*"' edicoes.html | sort -u | head -40 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pagina-base-de-dados
+          path: pagina.html
+      - name: Mapear agosto/2026
+        if: always()
+        run: python -m dou_md mapear --de 2026-08 --ate 2026-08 && cat estado/inventario.csv
+      - name: Migrar Seção 1 de agosto/2026 (sem publicar)
+        run: |
+          python -m dou_md migrar --mes 2026-08 --janela 999
+          echo "Arquivos .md: $(find dados -name '*.md' | wc -l)"; du -sh dados
+          find dados -name '*.md' | head -3 | xargs -I{} sh -c 'echo "=== {}"; head -c 2500 "{}"; echo'
+          cat PROGRESS.md

@@ -1,0 +1,11 @@
+# dou.md
+
+> Diário Oficial da União (Brasil) em Markdown: um arquivo .md por matéria, com frontmatter YAML
+> (id_materia, titulo, tipo, secao, data_publicacao, edicao, pagina, orgao, ementa, url_pdf).
+
+- Últimos 12 meses: dados/AAAA/MM/DD/<secao>/<idMateria>-<titulo>.md
+- Histórico completo: GitHub Releases "dou-AAAA-MM", um .zip de Markdown por seção
+- Seções: secao-1 (atos normativos), secao-2 (pessoal), secao-3 (contratos e editais), *-extra (edições extras)
+- Inventário e status da migração: estado/inventario.csv e PROGRESS.md
+- Fonte: https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados (Imprensa Nacional)
+- O texto oficial e válido é o publicado em https://www.in.gov.br
