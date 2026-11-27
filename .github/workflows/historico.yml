@@ -1,0 +1,43 @@
+name: Migrar histórico do DOU
+
+on:
+  schedule:
+    - cron: "30 */3 * * *"   # a cada 3 horas, um lote de arquivos pendentes
+  workflow_dispatch:
+    inputs:
+      lote:
+        description: "Quantos arquivos pendentes migrar"
+        default: "4"
+
+concurrency:
+  group: dou-dados
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  migrar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Migrar lote
+        env:
+          LOTE: ${{ inputs.lote || '4' }}
+        run: python -m dou_md migrar --pendentes "$LOTE" --publicar
+      - name: Podar meses fora da janela
+        run: python -m dou_md podar
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "dou-md-bot"; git config user.email "dou-md-bot@users.noreply.github.com"
+          git add -A estado PROGRESS.md dados
+          git diff --cached --quiet && exit 0
+          git commit -q -m "DOU: migração do histórico (lote)"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done

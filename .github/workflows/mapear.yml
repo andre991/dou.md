@@ -1,0 +1,42 @@
+name: Mapear DOU
+
+on:
+  workflow_dispatch:
+    inputs:
+      de:
+        description: "Primeiro mês (AAAA-MM)"
+        default: "2002-01"
+      ate:
+        description: "Último mês (AAAA-MM, vazio = mês atual)"
+        default: ""
+
+concurrency:
+  group: dou-dados
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  mapear:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Mapear
+        env:
+          DE: ${{ inputs.de }}
+          ATE: ${{ inputs.ate }}
+        run: |
+          if [ -n "$ATE" ]; then python -m dou_md mapear --de "$DE" --ate "$ATE"; else python -m dou_md mapear --de "$DE"; fi
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "dou-md-bot"; git config user.email "dou-md-bot@users.noreply.github.com"
+          git add -A estado PROGRESS.md
+          git diff --cached --quiet && exit 0
+          git commit -q -m "DOU: mapeamento"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done

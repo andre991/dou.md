@@ -1,0 +1,41 @@
+name: Bot diário do DOU
+
+on:
+  schedule:
+    - cron: "0 16 * * *"   # 13h de Brasília: a Base de Dados é atualizada perto do meio-dia
+  workflow_dispatch:
+
+concurrency:
+  group: dou-dados
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Mapear mês atual e anterior
+        run: |
+          ATUAL=$(date -u +%Y-%m); ANTERIOR=$(date -u -d "$(date -u +%Y-%m-01) -1 month" +%Y-%m)
+          echo "ATUAL=$ATUAL" >> $GITHUB_ENV; echo "ANTERIOR=$ANTERIOR" >> $GITHUB_ENV
+          python -m dou_md mapear --de "$ANTERIOR" --ate "$ATUAL"
+      - name: Migrar o que mudou
+        run: python -m dou_md migrar --mes "$ANTERIOR" --mes "$ATUAL" --publicar
+      - name: Podar meses fora da janela
+        run: python -m dou_md podar
+      - name: Commit
+        run: |
+          git config user.name "dou-md-bot"; git config user.email "dou-md-bot@users.noreply.github.com"
+          git add -A estado PROGRESS.md dados
+          git diff --cached --quiet && exit 0
+          git commit -q -m "DOU: atualização diária $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 10; done
