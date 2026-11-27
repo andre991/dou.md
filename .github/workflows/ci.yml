@@ -30,6 +30,11 @@ jobs:
           curl -sSL -A "dou.md/0.1" "https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados?ano=2026&mes=Agosto" -o pagina.html || true
           wc -c pagina.html
           grep -oiE '.{0,200}\.zip.{0,100}' pagina.html | head -20 || true
+      - name: Lista de edições do portal de pesquisa (amostra)
+        if: always()
+        run: |
+          curl -sSL -A "dou.md/0.1" -o edicoes.html -w "HTTP %{http_code}, %{size_download} bytes\n" "https://pesquisa.in.gov.br/imprensa/core/jornalList.action?edicao.dtInicio=27%2F11&edicao.ano=2026&edicao.dtFim=27%2F11&d-7825134-p=1" || true
+          grep -oiE 'href="[^"]*"' edicoes.html | sort -u | head -40 || true
       - uses: actions/upload-artifact@v4
         with:
           name: pagina-base-de-dados
