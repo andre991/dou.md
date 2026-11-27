@@ -29,8 +29,13 @@ jobs:
         run: |
           curl -sSL -A "dou.md/0.1" "https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados?ano=2026&mes=Agosto" -o pagina.html || true
           wc -c pagina.html
-          grep -oiE 'href="[^"]*\.zip[^"]*"' pagina.html | head -20 || true
+          grep -oiE '.{0,200}\.zip.{0,100}' pagina.html | head -20 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pagina-base-de-dados
+          path: pagina.html
       - name: Mapear agosto/2026
+        if: always()
         run: python -m dou_md mapear --de 2026-08 --ate 2026-08 && cat estado/inventario.csv
       - name: Migrar Seção 1 de agosto/2026 (sem publicar)
         run: |

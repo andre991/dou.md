@@ -12,7 +12,9 @@ from html import unescape
 URL_BASE = "https://www.in.gov.br/acesso-a-informacao/dados-abertos/base-de-dados"
 MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto",
          "Setembro", "Outubro", "Novembro", "Dezembro"]
-USER_AGENT = "dou.md/0.1 (+https://github.com/andre991/dou.md)"
+# User-Agent honesto e curto, igual ao que funcionou com curl na sonda da CI.
+USER_AGENT = "dou.md/0.1"
+CABECALHOS = {"User-Agent": USER_AGENT, "Accept": "*/*"}
 ANO_INICIAL = 2002
 
 RE_LINK_ZIP = re.compile(r"""href\s*=\s*["']([^"']+?\.zip[^"']*)["']""", re.I)
@@ -24,7 +26,7 @@ def _get(url, metodo="GET", tentativas=4, timeout=120):
     erro = None
     for i in range(tentativas):
         try:
-            req = urllib.request.Request(url, method=metodo, headers={"User-Agent": USER_AGENT})
+            req = urllib.request.Request(url, method=metodo, headers=CABECALHOS)
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.status, dict(r.headers), (r.read() if metodo == "GET" else b"")
         except urllib.error.HTTPError as e:
